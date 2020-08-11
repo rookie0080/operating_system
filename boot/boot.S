@@ -57,7 +57,7 @@ seta20.2:
   .code32                     # Assemble for 32-bit mode
 protcseg:
   # Set up the protected-mode data segment registers
-  movw    $PROT_MODE_DSEG, %ax    # Our data segment selector
+  movw    $PROT_MODE_DSEG, %ax    # Our data segment selector 选择子为0x10，选择的是GDT中的第2个描述符
   movw    %ax, %ds                # -> DS: Data Segment
   movw    %ax, %es                # -> ES: Extra Segment
   movw    %ax, %fs                # -> FS
