@@ -95,6 +95,7 @@ boot_alloc(uint32_t n)
 	if (!nextfree) {
 		extern char end[];		
 		nextfree = ROUNDUP((char *) end, PGSIZE);
+		// cprintf("end: %x, kern_pgdir: %x\n", end, &kern_pgdir);
 	}
 
 	// Allocate a chunk large enough to hold 'n' bytes, then update
@@ -105,10 +106,10 @@ boot_alloc(uint32_t n)
 	if (n == 0) 
 		return nextfree;
 	if (n > 0) {
-		result = ROUNDUP((char *)((uint32_t)nextfree + n), PGSIZE);
-		if (PADDR(result) < npages * PGSIZE) {
-			nextfree = result;
-			return nextfree;
+		if (PADDR(ROUNDUP((char *)((uint32_t)nextfree + n), PGSIZE)) < npages * PGSIZE) {
+			result = nextfree;
+			nextfree = ROUNDUP((char *)((uint32_t)nextfree + n), PGSIZE);
+			return result;
 		} else
 			panic("boot_alloc: out of memory\n");
 	}
@@ -140,6 +141,7 @@ mem_init(void)
 	// create initial page directory.
 	kern_pgdir = (pde_t *) boot_alloc(PGSIZE);	// 分配一个物理页用作页目录
 	memset(kern_pgdir, 0, PGSIZE);	// 线性地址就跟在内核后面，memset肯定不会出错
+	// cprintf("kern_pgdir: %x\n", kern_pgdir);
 
 	//////////////////////////////////////////////////////////////////////
 	// Recursively insert PD in itself as a page table, to form
@@ -183,9 +185,7 @@ mem_init(void)
 	//      (ie. perm = PTE_U | PTE_P)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
-	size_t size_pages = ROUNDUP(npages*sizeof(struct PageInfo), PGSIZE);
-	boot_map_region(kern_pgdir, UPAGES, size_pages, PADDR(pages), PTE_W);
-	boot_map_region(kern_pgdir, UPAGES+size_pages, PTSIZE-size_pages, PADDR(pages)+size_pages, PTE_U);
+	boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U);
 
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
@@ -199,11 +199,7 @@ mem_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
 	// guard page不做任何映射，这样当kernel stack溢出时会直接报错而不是任由其写不属于（真实的）栈的空间
-	physaddr_t pa_stack_for_map = PADDR(bootstacktop) - PGSIZE;
-	for (uintptr_t va = KSTACKTOP-PGSIZE; va >= KSTACKTOP - KSTKSIZE; va = va - PGSIZE) {	// 从上往下映射，且要从KSTACKTOP-PGSIZE开始
-		page_insert(kern_pgdir, pa2page(pa_stack_for_map), (void *)va, PTE_W | PTE_P);	
-		pa_stack_for_map -= PGSIZE;
-	}	
+	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstacktop)-KSTKSIZE, PTE_U);
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -274,7 +270,7 @@ page_init(void)
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
 	size_t i;
-	uintptr_t ext_free_start = (uint32_t)pages + npages*sizeof(struct PageInfo);
+	uintptr_t ext_free_start = (uint32_t)boot_alloc(0);
 	for( i = npages-1; i >= PADDR((void *)ext_free_start) / PGSIZE; i--) {	// case 3 & 4
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
@@ -285,17 +281,6 @@ page_init(void)
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
-	// for (i = 1; i < npages_basemem; i++) {	// case 1 & 2
-	// 	pages[i].pp_ref = 0;
-	// 	pages[i].pp_link = page_free_list;
-	// 	page_free_list = &pages[i];
-	// }
-	// for( i = PADDR((void *)ext_free_start) / PGSIZE; i<  npages; i++) {	// case 3 & 4
-	// 	pages[i].pp_ref = 0;
-	// 	pages[i].pp_link = page_free_list;
-	// 	page_free_list = &pages[i];	
-	// }
-	
 }
 
 //
@@ -423,13 +408,6 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	pte_t *pte;
 	uintptr_t last = va + size;
 	
-	// if (!pgdir) {
-	// 	panic("boot_map_region:  pgdir is NULL\n");
-	// 	return;
-	// }
-	// static int cnt = 0;
-	// cnt++;
-	// int i = 0;
 	for (;;) {
 		// cprintf("第%d次调用\t%d\n", cnt, i++);
 		pte = pgdir_walk(pgdir, (char *)(va), 1);
