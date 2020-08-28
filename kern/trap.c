@@ -58,13 +58,16 @@ static const char *trapname(int trapno)
 	return "(unknown trap)";
 }
 
-
 void
 trap_init(void)
 {
-	extern struct Segdesc gdt[];
+	extern struct Segdesc gdt[];	
 
 	// LAB 3: Your code here.
+	extern uint32_t handlers[];
+	for (int i = 0; i < 20; i++) {	// 先初始化前20个看看对不对
+		SETGATE(idt[i], 0, GD_KT, handlers[i], 0);	// 第2个参数先设为 !istrap
+	}
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -91,6 +94,7 @@ trap_init_percpu(void)
 
 	// Load the IDT
 	lidt(&idt_pd);
+
 }
 
 void
@@ -178,7 +182,7 @@ trap(struct Trapframe *tf)
 		// will restart at the trap point.
 		curenv->env_tf = *tf;
 		// The trapframe on the stack should be ignored from here on.
-		tf = &curenv->env_tf;
+		tf = &curenv->env_tf;	// tf不还是没有变吗？
 	}
 
 	// Record that tf is the last real trapframe so
