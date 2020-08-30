@@ -593,6 +593,27 @@ int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
 	// LAB 3: Your code here.
+	uintptr_t begin, end;
+	begin = ROUNDDOWN((uint32_t)va, PGSIZE);
+	end = ROUNDUP((uint32_t)(va) + len, PGSIZE);
+
+	// perm是我们要查看是否具有的权限，它有可能未设置PTE_U，即只查看是否PTE_P的情况
+	for (uintptr_t addr = begin; addr < end; addr += PGSIZE) {
+		pde_t *pde = &(env->env_pgdir)[PDX(addr)];
+
+		pte_t *pg =  KADDR(PTE_ADDR(*pde));
+		pte_t *pte = &pg[PTX(addr)];
+		// cprintf("addr: %x\tULIM: %x\tperm: %x\n", addr, ULIM, *pde);
+		if (addr >= ULIM || !(*pde & PTE_P)|| (*pte&(PTE_P|perm)) != (PTE_P|perm)) {
+			if (addr == begin)
+				user_mem_check_addr = (uint32_t)va;
+			else if (addr == end)
+				user_mem_check_addr = (uint32_t)va + len;
+			else 
+				user_mem_check_addr = addr;
+			return -E_FAULT;
+		}
+	}
 
 	return 0;
 }
@@ -608,6 +629,7 @@ void
 user_mem_assert(struct Env *env, const void *va, size_t len, int perm)
 {
 	if (user_mem_check(env, va, len, perm | PTE_U) < 0) {
+		// 调用user_mem_check时perm中可能没有PTE_U，但在此处调用设置为至少要有
 		cprintf("[%08x] user_mem_check assertion failure for "
 			"va %08x\n", env->env_id, user_mem_check_addr);
 		env_destroy(env);	// may not return

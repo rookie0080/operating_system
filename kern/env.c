@@ -400,7 +400,7 @@ env_create(uint8_t *binary, enum EnvType type)
 	struct Env *new_env;
 	struct Trapframe *tf;
 
-	env_alloc(&new_env, 0);	// allocates and initialize a new environment
+	env_alloc(&new_env, 0);	// allocates and initialize a new Env
 	load_icode(new_env, binary);
 	new_env->env_type = type;
 }
