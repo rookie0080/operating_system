@@ -45,7 +45,7 @@ i386_init(void)
 #endif // TEST*
 
 	// We only have one user environment for now, so just run it.
-	env_run(&envs[0]);
+	env_run(&envs[0]);	// 由env_free_list是从前往后的，所以一定是第一个元素
 }
 
 

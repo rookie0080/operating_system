@@ -398,10 +398,9 @@ env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
 	struct Env *new_env;
-	struct Trapframe *tf;
 
 	env_alloc(&new_env, 0);	// allocates and initialize a new Env
-	load_icode(new_env, binary);
+	load_icode(new_env, binary);	// 传new_env是因为要设置Env的eip
 	new_env->env_type = type;
 }
 

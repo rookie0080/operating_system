@@ -75,7 +75,7 @@ TRAPHANDLER_NOEC(t_syscall, T_SYSCALL)
  */
 
 _alltraps: /* 可以模仿env.c中env_pop_tf函数，取逆过程 */
-// 	/* push values to make the stack look like a struct Trapframe */
+ 	/* push values to make the stack look like a struct Trapframe */
 	pushl %ds
 	pushl %es
 	pushal

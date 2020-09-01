@@ -600,7 +600,6 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	// perm是我们要查看是否具有的权限，它有可能未设置PTE_U，即只查看是否PTE_P的情况
 	for (uintptr_t addr = begin; addr < end; addr += PGSIZE) {
 		pde_t *pde = &(env->env_pgdir)[PDX(addr)];
-
 		pte_t *pg =  KADDR(PTE_ADDR(*pde));
 		pte_t *pte = &pg[PTX(addr)];
 		// cprintf("addr: %x\tULIM: %x\tperm: %x\n", addr, ULIM, *pde);

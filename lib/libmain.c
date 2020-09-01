@@ -15,6 +15,7 @@ libmain(int argc, char **argv)
 	// LAB 3: Your code here.
 	thisenv = 0;
 	envid_t envid =  sys_getenvid();
+	
 	for (int i = 0; i < NENV; i++) {		
 		if (envs[i].env_id == envid) {
 			thisenv = &envs[i];
