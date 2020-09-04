@@ -502,7 +502,7 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 	if (*pte & PTE_P) {		// if there is no page mapped at va
 		if (PTE_ADDR(*pte) < npages*PGSIZE) {	// if a valid physical address
 			if (pte_store) 
-				**pte_store = *pte;
+				*pte_store = pte;
 			return pa2page(PTE_ADDR(*pte));
 		}
 	}
