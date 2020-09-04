@@ -282,7 +282,9 @@ region_alloc(struct Env *e, void *va, size_t len)
 	struct PageInfo *pp = NULL;
 
 	begin = (uintptr_t)ROUNDDOWN(va, PGSIZE);
-	end = (uintptr_t)ROUNDUP(va + len, PGSIZE);	// but, what corner-cases??
+	end = (uintptr_t)ROUNDUP(va + len, PGSIZE);	
+	if (end >= UTOP)
+		panic("region_alloc: cannot alloc memory above UTOP\n");
 
 	for (uintptr_t addr = begin; addr < end; addr += PGSIZE) {
 		if (!(pp = page_alloc(0)))
