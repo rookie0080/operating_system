@@ -30,10 +30,10 @@ duppage(envid_t dstenv, void *addr)
 	// This is NOT what you should do in your fork.
 	if ((r = sys_page_alloc(dstenv, addr, PTE_P|PTE_U|PTE_W)) < 0)
 		panic("sys_page_alloc: %e", r);
-	if ((r = sys_page_map(dstenv, addr, 0, UTEMP, PTE_P|PTE_U|PTE_W)) < 0)
+	if ((r = sys_page_map(dstenv, addr, 0, UTEMP, PTE_P|PTE_U|PTE_W)) < 0)	// 父进程创建一个临时映射让UTEMP指向子进程addr所指的物理页
 		panic("sys_page_map: %e", r);
-	memmove(UTEMP, addr, PGSIZE);
-	if ((r = sys_page_unmap(0, UTEMP)) < 0)
+	memmove(UTEMP, addr, PGSIZE);	// 父进程将它addr处的内容拷贝到UTEMP处，即子进程addr对应的物理页
+	if ((r = sys_page_unmap(0, UTEMP)) < 0)	// 父进程解除映射UTEMP
 		panic("sys_page_unmap: %e", r);
 }
 
@@ -72,7 +72,7 @@ dumbfork(void)
 	duppage(envid, ROUNDDOWN(&addr, PGSIZE));
 
 	// Start the child environment running
-	if ((r = sys_env_set_status(envid, ENV_RUNNABLE)) < 0)
+	if ((r = sys_env_set_status(envid, ENV_RUNNABLE)) < 0) 
 		panic("sys_env_set_status: %e", r);
 
 	return envid;

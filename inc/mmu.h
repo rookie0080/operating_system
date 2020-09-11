@@ -27,13 +27,13 @@
 // use PGADDR(PDX(la), PTX(la), PGOFF(la)).
 
 // page number field of address
-#define PGNUM(la)	(((uintptr_t) (la)) >> PTXSHIFT)
+#define PGNUM(la)	(((uintptr_t) (la)) >> PTXSHIFT)		
 
 // page directory index
-#define PDX(la)		((((uintptr_t) (la)) >> PDXSHIFT) & 0x3FF)
+#define PDX(la)		((((uintptr_t) (la)) >> PDXSHIFT) & 0x3FF)	// PDXSHIFT 22
 
 // page table index
-#define PTX(la)		((((uintptr_t) (la)) >> PTXSHIFT) & 0x3FF)
+#define PTX(la)		((((uintptr_t) (la)) >> PTXSHIFT) & 0x3FF)	// PTXSHIFT 12
 
 // offset in page
 #define PGOFF(la)	(((uintptr_t) (la)) & 0xFFF)

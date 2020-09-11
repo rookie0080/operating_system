@@ -11,7 +11,7 @@
 extern void _pgfault_upcall(void);
 
 // Pointer to currently installed C-language pgfault handler.
-void (*_pgfault_handler)(struct UTrapframe *utf);
+void (*_pgfault_handler)(struct UTrapframe *utf); // 定义一个函数指针
 
 //
 // Set the page fault handler function.
@@ -29,7 +29,11 @@ set_pgfault_handler(void (*handler)(struct UTrapframe *utf))
 	if (_pgfault_handler == 0) {
 		// First time through!
 		// LAB 4: Your code here.
-		panic("set_pgfault_handler not implemented");
+		if ((r = sys_page_alloc(thisenv->env_id, (void *)(UXSTACKTOP-PGSIZE), PTE_U | PTE_W | PTE_P)) < 0)	// 一定要有PTE_P和PTE_U
+			panic("set_pgfault_handler: allocation failed\n");
+		if ((r = sys_env_set_pgfault_upcall(thisenv->env_id, _pgfault_upcall)) < 0)
+			panic("sys_env_set_pgfault_upcall failed\n");
+		// panic("set_pgfault_handler not implemented");
 	}
 
 	// Save handler pointer for assembly to call.
