@@ -71,7 +71,7 @@ void	user_mem_assert(struct Env *env, const void *va, size_t len, int perm);
 static inline physaddr_t
 page2pa(struct PageInfo *pp)
 {
-	return (pp - pages) << PGSHIFT;
+	return (pp - pages) << PGSHIFT;	// pp-pages表示第几个物理页，接着左移12位得到该pp对应的页的物理地址
 }
 
 static inline struct PageInfo*

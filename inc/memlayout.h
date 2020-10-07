@@ -183,8 +183,8 @@ struct PageInfo {
 	// to this page, for pages allocated using page_alloc.
 	// Pages allocated at boot time using pmap.c's
 	// boot_alloc do not have valid reference count fields.
-
-	uint16_t pp_ref;
+	
+	uint16_t pp_ref; //  also page directory entries!!
 };
 
 #endif /* !__ASSEMBLER__ */
