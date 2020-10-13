@@ -82,7 +82,7 @@ union Fsipc {
 		int req_fileid;
 		off_t req_size;
 	} set_size;
-	struct Fsreq_read {
+	struct Fsreq_read {	// read at most req_n bytes from the current seek position in req_fileid
 		int req_fileid;
 		size_t req_n;
 	} read;

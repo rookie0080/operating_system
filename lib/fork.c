@@ -82,7 +82,11 @@ duppage(envid_t envid, unsigned pn)
 	// if ((uintptr_t)addr % 0x100000 == 0)	
 	// 		cprintf("addr: %x, so far so good\n", addr);
 
-	if ((uvpt[pn] & PTE_W) || (uvpt[pn] & PTE_COW)) {
+	// added in lab5
+	if (uvpt[pn] & PTE_SHARE) {
+		if ((r = sys_page_map(thisenv->env_id, addr, envid, addr, PTE_SYSCALL)) < 0)
+			panic("sys_page_map: %e", r);
+	}else if ((uvpt[pn] & PTE_W) || (uvpt[pn] & PTE_COW)) {
 		if ((r = sys_page_map(thisenv->env_id, addr, envid, addr, basic_perm|PTE_COW)) < 0)
 			panic("sys_page_map: %e", r);
 		if ((r = sys_page_map(thisenv->env_id, addr, thisenv->env_id, addr, basic_perm|PTE_COW)) < 0)

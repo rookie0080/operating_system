@@ -414,12 +414,15 @@ env_create(uint8_t *binary, enum EnvType type)
 	// LAB 3: Your code here.
 
 	// If this is the file server (type == ENV_TYPE_FS) give it I/O privileges.
+
 	// LAB 5: Your code here.
-	struct Env *new_env;
+	struct Env *new_env;		
 
 	env_alloc(&new_env, 0);	// allocates and initialize a new Env
 	load_icode(new_env, binary);	// 传new_env是因为要设置Env的eip
 	new_env->env_type = type;
+	if (type == ENV_TYPE_FS) 
+		new_env->env_tf.tf_eflags |= FL_IOPL_3;	// note: should be 3 ,not 0
 }
 
 //
