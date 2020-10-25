@@ -140,7 +140,7 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
 		return -E_BAD_ENV;
 	tf->tf_eflags &= ~FL_IOPL_MASK;  // !!
 	env->env_tf = *tf;
-	cprintf("tf->eflags%x\n", env->env_tf.tf_eflags);
+	// cprintf("tf->eflags: %x\n", env->env_tf.tf_eflags);
 	return 0;
 	// panic("sys_env_set_trapframe not implemented");
 }
@@ -437,7 +437,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	case SYS_ipc_recv:
 		return sys_ipc_recv((void *)a1);
 	case SYS_env_set_trapframe:
-		return sys_env_set_trapframe(a1, (void *)a2);
+		return sys_env_set_trapframe(a1, (struct Trapframe *)a2);
 	default:
 		return -E_INVAL;
 	}

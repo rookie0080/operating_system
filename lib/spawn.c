@@ -309,7 +309,6 @@ copy_shared_pages(envid_t child)
 			if ((r = sys_page_map(thisenv->env_id, (void *)addr, child, (void*)addr, PTE_SYSCALL)) < 0)
 				panic("sys_page_map: %e", r);
 		}
-			
 	}
 	return 0;
 }
